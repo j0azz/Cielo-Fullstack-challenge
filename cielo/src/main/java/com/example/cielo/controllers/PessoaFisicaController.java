@@ -22,8 +22,8 @@ public class PessoaFisicaController {
     }
 
     @GetMapping("/pf/consult/{cnpj}")
-    public ResponseEntity<?> verifyClient(@RequestParam String cnpj) {
-        if (pfService.verify(cnpj)) {//if it is null it already exists
+    public ResponseEntity<?> verifyClient(@RequestParam String cpf) {
+        if (pfService.verify(cpf)) {//if it is null it already exists
             return ResponseEntity.status(HttpStatus.FOUND).body("Client found.");
         }
         else {
