@@ -2,6 +2,7 @@ package com.example.cielo.controllers;
 
 import com.example.cielo.models.PessoaJuridica;
 import com.example.cielo.services.PessoaJuridicaService;
+import com.example.cielo.services.QueueService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
@@ -14,9 +15,11 @@ import org.springframework.web.bind.annotation.*;
 public class PessoaJuridicaController {
 
     private final PessoaJuridicaService pjService;
+    private final QueueService queueService;
 
     @Autowired
     public PessoaJuridicaController(PessoaJuridicaService pjService) {
+        queueService= new QueueService();
         this.pjService = pjService;
     }
 
@@ -41,6 +44,7 @@ public class PessoaJuridicaController {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body("Client already exists.");
             }
             else {
+                queueService.addLast(client.getCnpj());
                 return ResponseEntity.status(HttpStatus.CREATED).body("Client" +createdPJProspect.getCnpj()+" created successfully!");
             }
         }
@@ -57,6 +61,7 @@ public class PessoaJuridicaController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Client does not exist.");
             }
             else {
+                queueService.findAndRequeueCustomer(client.getCnpj());
                 return ResponseEntity.status(HttpStatus.OK).body("Client" +createdPJProspect.getCnpj()+" updated successfully!");
             }
         }
@@ -66,6 +71,7 @@ public class PessoaJuridicaController {
     public ResponseEntity<?> deleteClient(@RequestParam String cnpj) {
         if (pjService.verify(cnpj)) {//if it is null it already exists
             pjService.delete(cnpj);
+            queueService.remove(cnpj);
             return ResponseEntity.status(HttpStatus.OK).body("Client deleted.");
         }
         else {

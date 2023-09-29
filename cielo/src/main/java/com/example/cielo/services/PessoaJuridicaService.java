@@ -1,5 +1,6 @@
 package com.example.cielo.services;
 
+import com.example.cielo.models.PessoaFisica;
 import com.example.cielo.models.PessoaJuridica;
 import com.example.cielo.repositories.PessoaJuridicaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,12 @@ public class PessoaJuridicaService {
             return true;
         }
     }
+
+    public PessoaJuridica getData(String cnpj){
+        PessoaJuridica pj = pessoaJuridicaRepository.findByCnpj(cnpj);
+        return pj;
+    }
+
 
     public boolean verify(String cnpj){
         PessoaJuridica pj = pessoaJuridicaRepository.findByCnpj(cnpj);

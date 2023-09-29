@@ -29,6 +29,11 @@ public class PessoaFisicaService {
         }
     }
 
+    public PessoaFisica getData(String cpf){
+        PessoaFisica pf = pessoaFisicaRepository.findByCpf(cpf);
+        return pf;
+    }
+
     public boolean verify(String cpf){
         PessoaFisica pf = pessoaFisicaRepository.findByCpf(cpf);
         if(pf==null){

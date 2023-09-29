@@ -3,6 +3,7 @@ package com.example.cielo.controllers;
 import com.example.cielo.models.PessoaFisica;
 import com.example.cielo.models.PessoaJuridica;
 import com.example.cielo.services.PessoaFisicaService;
+import com.example.cielo.services.QueueService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
@@ -15,10 +16,12 @@ import org.springframework.web.bind.annotation.*;
 public class PessoaFisicaController {
 
     private final PessoaFisicaService pfService;
+    private final QueueService queueService;
 
     @Autowired
      public PessoaFisicaController(PessoaFisicaService pfService) {
         this.pfService = pfService;
+        queueService = new QueueService();
     }
 
     @GetMapping("/pf/consult/{cnpj}")
@@ -42,6 +45,7 @@ public class PessoaFisicaController {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body("Client already exists.");
             }
             else {
+                queueService.addLast(createdPFProspect.getCpf());
                 return ResponseEntity.status(HttpStatus.CREATED).body("Client" +createdPFProspect.getCpf()+" created successfully!");
             }
         }
@@ -58,6 +62,7 @@ public class PessoaFisicaController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Client does not exist.");
             }
             else {
+                queueService.findAndRequeueCustomer(createdPFProspect.getCpf());
                 return ResponseEntity.status(HttpStatus.OK).body("Client" +createdPFProspect.getCpf()+" updated successfully!");
             }
         }
@@ -67,6 +72,7 @@ public class PessoaFisicaController {
     public ResponseEntity<?> deleteClient(@RequestParam String cpf) {
         if (pfService.verify(cpf)) {//if it is null it already exists
             pfService.delete(cpf);
+            queueService.remove(cpf);
             return ResponseEntity.status(HttpStatus.OK).body("Client deleted.");
         }
         else {
